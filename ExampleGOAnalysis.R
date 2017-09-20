@@ -26,12 +26,12 @@ if (species == "human") {
   goSource <- 'org.Mm.eg'
 }
 
-if (method == "AUC") {
+if (methodToUse == "AUC") {
   #for demostration purposes - genes sorted alphbetically, human genes
   #this could be replaced by your genes that have been sorted by their p-value multipled by the sign of the direction of effect
   sortedGenes <- sort(unique(names(as.list(org.Hs.egALIAS2EG))))
 }
-if (method == "hyper") {
+if (methodToUse == "hyper") {
   #the hypergeometric method just compares the hit list or foreground genes against the remaining genes tested
   #again, this is just for demonstration purposes
   sortedGenes <- sort(unique(names(as.list(org.Hs.egALIAS2EG))))
