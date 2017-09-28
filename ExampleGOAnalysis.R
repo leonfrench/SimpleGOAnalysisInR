@@ -75,6 +75,7 @@ if (exists("geneSetsGO") && length(geneSetsGO$MODULES2GENES) > 1000 ) { #assume 
   }
   geneSetsGO <- makeTmod(modules = tmodNames, modules2genes = modules2genes)
 }
+
 #sorted gene list method
 if (method == "AUC") {
   result <- tbl_df(tmodUtest(c(sortedGenes), mset=geneSetsGO, qval = 1, filter = T))
@@ -100,7 +101,7 @@ if (method == "AUC") {
 
 #this just compares two lists
 if (method == "hyper") {
-  result <- tbl_df(tmodHGtest(fg = hitListGenes, bg = sortedGenes, mset=geneSetsGO, qval = 1, filter = T))
+  result <- tbl_df(tmodHGtest(fg = hitListGenes, bg = sortedGenes, mset=geneSetsGO, qval = 1.01, filter = T))
   
   result %<>% rowwise() %>% mutate(aspect = Ontology(ID)) #add the source ontology (could be filterd for just biological process)
   result$rank <- 1:nrow(result)
