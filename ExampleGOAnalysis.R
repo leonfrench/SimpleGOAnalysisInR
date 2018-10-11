@@ -83,7 +83,12 @@ if (method == "AUC") {
   result %<>% rowwise() %>% mutate(aspect = Ontology(ID)) #add the source ontology (could be filterd for just biological process)
   
   #collapse genesets that have the exact same set of genes
-  (result %<>% group_by(U, N1, AUC, P.Value,adj.P.Val) %>% summarize(MainTitle = first(Title),  ID=paste(ID, collapse=","), aspect= first(aspect), allNames = if_else(n() > 1, paste(Title[2:length(Title)], collapse=","), "")))
+  result %<>% rowwise() %>% mutate(genes = paste(sort(unlist(geneSetsGO$MODULES2GENES[ID])), collapse = " "))
+  result %<>% ungroup() %>% group_by(genes, N1) %>% arrange(Title) %>% 
+    summarize(MainTitle = dplyr::first(Title),  ID=paste(ID, collapse=","), AUC = dplyr::first(AUC), P.Value= dplyr::first(P.Value), aspect= dplyr::first(aspect), otherNames = if_else(dplyr::n() > 1, paste(Title[2:length(Title)], collapse=", "), ""))
+  result %<>% mutate(adj.P.Val=p.adjust(P.Value, method="fdr"))
+  result %<>% ungroup() %>% dplyr::select(-genes)
+  
   result %<>% arrange(P.Value)
   result$rank <- 1:nrow(result)
   result %<>% dplyr::select(MainTitle, N1, AUC, P.Value, adj.P.Val, everything()) %>% arrange(adj.P.Val)
