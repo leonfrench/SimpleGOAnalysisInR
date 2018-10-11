@@ -86,8 +86,8 @@ if (method == "AUC") {
   result %<>% rowwise() %>% mutate(genes = paste(sort(unlist(geneSetsGO$MODULES2GENES[ID])), collapse = " "))
   result %<>% ungroup() %>% group_by(genes, N1) %>% arrange(Title) %>% 
     summarize(MainTitle = dplyr::first(Title),  ID=paste(ID, collapse=","), AUC = dplyr::first(AUC), P.Value= dplyr::first(P.Value), aspect= dplyr::first(aspect), otherNames = if_else(dplyr::n() > 1, paste(Title[2:length(Title)], collapse=", "), ""))
-  result %<>% mutate(adj.P.Val=p.adjust(P.Value, method="fdr"))
-  result %<>% ungroup() %>% dplyr::select(-genes)
+  result %<>% ungroup() %>% mutate(adj.P.Val=p.adjust(P.Value, method="fdr"))
+  result %<>% dplyr::select(-genes)
   
   result %<>% arrange(P.Value)
   result$rank <- 1:nrow(result)
