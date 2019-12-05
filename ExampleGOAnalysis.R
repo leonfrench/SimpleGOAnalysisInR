@@ -104,6 +104,9 @@ if (method == "AUC") {
   #filter sorted genes for those in GO
   sortedGenes <- intersect(sortedGenes, geneSetsGO$GENES$ID)
   
+  #inspect a gene set:
+  geneSetsGO$MODULES2GENES["GO:0043492"] %>% unlist %>% unname
+  
   #plot the top and bottom GO Groups
   plots <- createPlots(sortedGenes, c("GO:0043492", "GO:0015293"), geneSetsGO)
   plots$AUCPlot
