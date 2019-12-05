@@ -14,7 +14,7 @@ library(tmod)
 species <- "human" #human or mouse
 maxGOgroupSize <- 200
 minGOgroupSize <- 10
-methodToUse <- "hyper" #hyper (two lists) or AUC (sorted list)
+methodToUse <- "AUC" #hyper (two lists) or AUC (sorted list)
 
 print(paste("GO Database date:", tbl_df(GO_dbInfo()) %>% filter(name == "GOSOURCEDATE") %>% .$value))
 
@@ -78,14 +78,16 @@ if (exists("geneSetsGO") && length(geneSetsGO$MODULES2GENES) > 1000 ) { #assume 
 
 #sorted gene list method
 if (method == "AUC") {
-  result <- tbl_df(tmodUtest(c(sortedGenes), mset=geneSetsGO, qval = 1, filter = T))
+  result <- tbl_df(tmodUtest(c(sortedGenes), mset=geneSetsGO, qval = 1.01, filter = T))
   result %<>% rowwise() %>% mutate(P.Value = P.Value * 2) %>% ungroup() %>% mutate(adj.P.Val=p.adjust(P.Value, method="fdr")) #tmod runs one-sided tests
   result %<>% rowwise() %>% mutate(aspect = Ontology(ID)) #add the source ontology (could be filterd for just biological process)
   
   #collapse genesets that have the exact same set of genes
   result %<>% rowwise() %>% mutate(genes = paste(sort(unlist(geneSetsGO$MODULES2GENES[ID])), collapse = " "))
   result %<>% ungroup() %>% group_by(genes, N1) %>% arrange(Title) %>% 
-    summarize(MainTitle = dplyr::first(Title),  ID=paste(ID, collapse=","), AUC = dplyr::first(AUC), P.Value= dplyr::first(P.Value), aspect= dplyr::first(aspect), otherNames = if_else(dplyr::n() > 1, paste(Title[2:length(Title)], collapse=", "), ""))
+    summarize(MainTitle = dplyr::first(Title),  ID=paste(ID, collapse=","), AUC = dplyr::first(AUC), 
+              P.Value= dplyr::first(P.Value), aspect= dplyr::first(aspect), 
+              otherNames = if_else(length(unique(Title)) > 1, paste(Title[2:length(Title)], collapse=", "), ""))
   result %<>% ungroup() %>% mutate(adj.P.Val=p.adjust(P.Value, method="fdr"))
   result %<>% dplyr::select(-genes)
   
@@ -98,6 +100,9 @@ if (method == "AUC") {
   print(head(filter(result, AUC < 0.5) %>% dplyr::select(-ID), n=20))
 
   source("./ROCPlots.R")
+  
+  #filter sorted genes for those in GO
+  sortedGenes <- intersect(sortedGenes, geneSetsGO$GENES$ID)
   
   #plot the top and bottom GO Groups
   plots <- createPlots(sortedGenes, c("GO:0043492", "GO:0015293"), geneSetsGO)
